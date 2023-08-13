@@ -1,0 +1,79 @@
+;/*++
+;
+; File:  CSDeviceControl.INF
+;
+; Copyright:  CrowdStrike, Inc. Copyright (c) 2017-2021. All rights reserved.
+;--*/
+[Version]
+Signature="$WINDOWS NT$"
+Class=System
+ClassGuid={4D36E97D-E325-11CE-BFC1-08002BE10318}
+Provider=%ProviderName%
+DriverVer = 04/04/2023,6.54.16865.0
+CatalogFile=CSDeviceControl.cat
+
+[DestinationDirs]
+DefaultDestDir = 12
+
+[SourceDisksNames]
+1 = %DiskId1%,,,""
+
+[SourceDisksFiles]
+CSDeviceControl.sys  = 1,,
+
+;*****************************************
+; DCDeviceInstall  Install Section
+;*****************************************
+[Manufacturer]
+%Manufacturer%=DCDeviceInstall,NTx86,NTamd64,NTarm64
+
+[DCDeviceInstall.NTx86]
+%DCDevice.DeviceDesc%=DCDevice_Device, root\{bf0513dc-034c-4507-926c-a631aa80dc49}
+
+[DCDeviceInstall.NTamd64]
+%DCDevice.DeviceDesc%=DCDevice_Device, root\{bf0513dc-034c-4507-926c-a631aa80dc49}
+
+[DCDeviceInstall.NTarm64]
+%DCDevice.DeviceDesc%=DCDevice_Device, root\{bf0513dc-034c-4507-926c-a631aa80dc49}
+
+[DCDevice_Device.NT]
+CopyFiles=Drivers_Dir
+
+[DCDevice_Device.NT.HW]
+AddReg=DCDevice_Device.NT.AddReg
+
+[DCDevice_Device.NT.AddReg]                            
+HKR,,DeviceCharacteristics,0x10001,0x0100
+HKR,,Security,,"D:P(A;;GA;;;BA)(A;;GA;;;SY)"
+HKLM,SYSTEM\CurrentControlSet\Control\Class\{36FC9E60-C465-11CF-8056-444553540000}, UpperFilters, 0x00010008, "CsDeviceControl"
+HKLM,SYSTEM\CurrentControlSet\Control\Class\{e0cbf06c-cd8b-4647-bb8a-263b43f0f974}, UpperFilters, 0x00010008, "CsDeviceControl"
+HKLM,SYSTEM\CurrentControlSet\Control\Class\{e0cbf06c-cd8b-4647-bb8a-263b43f0f974}, LowerFilters, 0x00010008, "CsDeviceControl"
+
+[Drivers_Dir]
+CSDeviceControl.sys
+
+;-------------- Service installation
+[DCDevice_Device.NT.Services]
+AddService = CSDeviceControl,0x00000002, DeviceControl_Service_Inst
+
+; -------------- DeviceControl driver install sections
+[DeviceControl_Service_Inst]
+DisplayName    = %DeviceControl.SVCDESC%
+ServiceType    = 1               ; SERVICE_KERNEL_DRIVER
+StartType      = 3               ; SERVICE_DEMAND_START 
+ErrorControl   = 1               ; SERVICE_ERROR_NORMAL
+ServiceBinary  = %12%\CSDeviceControl.sys
+AddReg         = DeviceControl_Service_AddReg
+LoadOrderGroup = Base
+
+[DeviceControl_Service_AddReg]
+HKR,,BootFlags,0x00010003,0x00000014 ; CM_SERVICE_USB3_DISK_BOOT_LOAD | CM_SERVICE_USB_DISK_BOOT_LOAD
+
+[Strings]
+DriverVer = "03/20/2021,2.1.0000.0000"
+ProviderName = "CrowdStrike"
+Manufacturer = "CrowdStrike"
+StdMfg = "CrowdStrike System Device"
+DCDevice.DeviceDesc = "CrowdStrike Device Control Sensor Interface"
+DeviceControl.SVCDESC = "CrowdStrike Device Control Service"
+DiskId1 = "CrowdStrike Device Control Disk #1"

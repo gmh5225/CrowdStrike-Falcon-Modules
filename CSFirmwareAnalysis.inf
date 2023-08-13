@@ -1,0 +1,80 @@
+;/*++
+;
+; File:  CSFirmwareAnalysis.inf
+;
+; Copyright:  CrowdStrike, Inc. Copyright (c) 2019. All rights reserved.
+;--*/
+[Version]
+Signature="$WINDOWS NT$"
+Class=System
+ClassGuid={4D36E97D-E325-11CE-BFC1-08002BE10318}
+Provider=%ProviderName%
+DriverVer = 10/19/2021,6.31.14587.0
+CatalogFile=CSFirmwareAnalysis.cat
+
+[DestinationDirs]
+Drivers_Dir = 12
+System32_Dir = 11
+
+[SourceDisksNames]
+1 = %DiskId1%,,,""
+
+[SourceDisksFiles]
+CSFirmwareAnalysis.sys = 1,,
+CSFirmwareAnalysisCoInstaller.dll = 1,,
+
+;*****************************************
+; FADeviceInstall  Install Section
+;*****************************************
+[Manufacturer]
+%Manufacturer%=FADeviceInstall,NTx86,NTamd64
+
+[FADeviceInstall.NTx86]
+%FADevice.DeviceDesc%=FADevice_Device, root\{3ad09657-7cd7-47ff-afb0-0763b78d95ea}
+
+[FADeviceInstall.NTamd64]
+%FADevice.DeviceDesc%=FADevice_Device, root\{3ad09657-7cd7-47ff-afb0-0763b78d95ea}
+
+[FADevice_Device.NT]
+CopyFiles=Drivers_Dir
+
+[FADevice_Device.NT.HW]
+AddReg=FADevice_Device.NT.AddReg
+
+[FADevice_Device.NT.AddReg]
+HKR,,DeviceCharacteristics,0x10001,0x0100
+HKR,,Security,,"D:"
+
+[FADevice_Device.NT.CoInstallers]
+AddReg=CoInstallers_AddReg
+CopyFiles=System32_Dir
+
+[CoInstallers_AddReg]
+HKR,,CoInstallers32,0x00010000,"CSFirmwareAnalysisCoInstaller.dll,CoDeviceInstall"
+
+[System32_Dir]
+CSFirmwareAnalysisCoInstaller.dll
+
+[Drivers_Dir]
+CSFirmwareAnalysis.sys
+
+;-------------- Service installation
+[FADevice_Device.NT.Services]
+AddService = CSFirmwareAnalysis,0x00000002, FirmwareAnalysis_Service_Inst
+
+; -------------- FirmwareAnalysis driver install sections
+[FirmwareAnalysis_Service_Inst]
+DisplayName    = %FirmwareAnalysis.SVCDESC%
+ServiceType    = 1   ; SERVICE_KERNEL_DRIVER
+StartType      = 0   ; SERVICE_BOOT_START
+ErrorControl   = 1   ; SERVICE_ERROR_NORMAL
+ServiceBinary  = %12%\CSFirmwareAnalysis.sys
+LoadOrderGroup = "Boot Bus Extender"
+
+[Strings]
+ProviderName = "CrowdStrike"
+Manufacturer = "CrowdStrike"
+StdMfg = "CrowdStrike System Device"
+FADevice.DeviceDesc = "CrowdStrike Firmware Analysis Sensor Interface"
+FirmwareAnalysis.SVCDESC = "CrowdStrike Firmware Analysis Service"
+DiskId1 = "CrowdStrike Firmware Analysis Disk #1"
